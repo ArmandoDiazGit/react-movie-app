@@ -11,9 +11,7 @@ import WatchedSummary from "./components/WatchedSummary.component";
 import WatchedList from "./components/WatchedList.component";
 import ErrorState from "./components/ErorState.component";
 import Main from "./components/Main.component";
-import tempMovieData from"./components/tempMovieData";
-import KEY from "./env/API-KEY";
-
+import tempMovieData from "./components/tempMovieData";
 
 export default function App() {
   const [movies, setMovies] = useState(tempMovieData);
@@ -49,27 +47,33 @@ export default function App() {
   useEffect(() => {
     const controller = new AbortController();
 
-    async function getMovies() {
+    async function getMovies(query, { signal } = {}) {
+      if (!query?.trim()) {
+        setMovies([]);
+        setError("");
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError("");
-        const res = await fetch(
-          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
-          { signal: controller.signal }
-        );
-        if (!res.ok) {
-          throw new Error("Network response was not ok");
-        }
+
+        const res = await fetch(`/api/omdb?s=${encodeURIComponent(query)}`, {
+          signal,
+        });
+
+        if (!res.ok) throw new Error("Network response was not ok");
+
         const data = await res.json();
+
         if (data.Response === "False") {
-          throw new Error("Movie not found");
+          throw new Error(data.Error || "Movie not found");
         }
-        setMovies(data.Search);
-        setError("");
+
+        setMovies(data.Search || []);
       } catch (err) {
-        if (err.name !== "AbortError") {
-          setError(err.message);
-        }
+        if (err.name !== "AbortError")
+          setError(err.message || "Something went wrong");
       } finally {
         setIsLoading(false);
       }
