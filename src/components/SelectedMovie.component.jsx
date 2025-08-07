@@ -17,9 +17,9 @@ export default function SelectedMovie({ id, onClose, onAddWatched, watched }) {
     [userRating]
   );
 
-  const isWatched = watched.map((movie) => movie.imdbID).includes(id);
-  const watchedUserRating = watched.find(
-    (movie) => movie.imdbID === id
+  const isWatched = watched?.map((movie) => movie.imdbID)?.includes(id);
+  const watchedUserRating = watched?.find(
+    (movie) => movie?.imdbID === id
   )?.userRating;
 
   const {
